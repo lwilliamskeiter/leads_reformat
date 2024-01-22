@@ -3,6 +3,11 @@ import pandas as pd
 import numpy as np
 from io import BytesIO
 import regex as re
+import requests
+import urllib3
+urllib3.disable_warnings()
+
+APIKEY = '5ab4064c-e88a-40c0-9358-290709f22db0'
 
 #%% Functions
 def clean_phone_number(phone):
@@ -34,10 +39,33 @@ def clean_numbers_list(phone_list):
     else:
         return None
 
+# Validate phone numbers
+def validate_phone(colname,PHONE):
+    if PHONE is None or PHONE == 'None' or PHONE == np.nan:
+        # If phone # is empty, intiliaze an empty DF
+        phone_basic = pd.DataFrame(
+            columns = ['PhoneNumber', 'ReportDate', 'LineType', 'PhoneCompany', 'PhoneLocation', 'FakeNumber', 'FakeNumberReason', 'ErrorCode', 'ErrorDescription'],
+            index=[0]
+        ).replace(np.nan,'')
+
+    else:
+        # If Phone is not empty, get just phone # (no hypen or parantheses)
+        PHONE = re.sub('[\(\)\- ]','',PHONE)
+        # API request
+        resp = requests.get(f'https://api.phonevalidator.com/api/v3/phonesearch?apikey={APIKEY}&phone={PHONE}&type=fake,basic',verify=False)
+        # Get PhoneBasic info
+        phone_basic = pd.DataFrame.from_dict(resp.json().get('PhoneBasic'),orient='index').T
+    
+    # Add column # corresponding to phone # column
+    phone_basic.columns = [x+re.search('\d',colname)[0] for x in phone_basic.columns.to_list()]
+
+    return phone_basic
+
 # Write to excel
 def write_excel(data_phone,data_email):
     output = BytesIO()
     writer = pd.ExcelWriter(output, engine="xlsxwriter")
+    writer = pd.ExcelWriter(excel_path, engine="xlsxwriter")
 
     # Convert the dataframes to an XlsxWriter Excel object.
     data_phone.to_excel(writer, sheet_name="Phone", index=False)
@@ -51,11 +79,13 @@ def write_excel(data_phone,data_email):
     ### Set Phone sheet format
     # Set column font sizes and widths
     wkst_phone.set_column(0, 0, max([data_phone['First Name'].apply(len).max(),14]), workbook.add_format({'font_size': 14}))
-    wkst_phone.set_column(1, data_phone.shape[1],
-                          48,
-                        #   data_phone.drop(columns='First Name').applymap(lambda x: 0 if x is None else len(str(x))).max().max()*1.25,
-                          workbook.add_format({'font_size': 24}))
-
+    # Set phone # column format
+    for i in list(np.where([x in data_phone.filter(like='PhoneNumber').columns.to_list() for x in data_phone.columns.to_list()])[0]):
+        wkst_phone.set_column(i,i,30,workbook.add_format({'font_size': 24}))
+    # Set remaining column formats
+    for j in [x for x in range(data_phone.shape[1]) if x not in [0] + list(np.where([x in data_phone.filter(like='PhoneNumber').columns.to_list() for x in data_phone.columns.to_list()])[0])]:
+        wkst_phone.set_column(j,j,max([data_phone.iloc[:,j].dropna().apply(len).max(),14]))
+    
     # Set table style
     wkst_phone.add_table(0, 0, data_phone.shape[0], data_phone.shape[1]-1,
                         {'style': 'Table Style Medium 9',
@@ -111,48 +141,79 @@ st.set_page_config(
 
 # Read file
 file_path = st.file_uploader('Upload Contacts File',type=['csv'])
-
+# file_path = 'MyContacts_export_flang@keitercpa.com_2023-12-07-13-10-07_raw.csv'
 if file_path is not None:
-    excel_path = 'cleaned_lead_list_' + re.search('\d{4}(-\d{2}){5}',file_path.name)[0] + '.xlsx'
 
-    data = pd.read_csv(file_path)
-    data_copy = data.copy()
+    with st.spinner():
+        excel_path = 'cleaned_lead_list_' + re.search('\d{4}(-\d{2}){5}',file_path.name)[0] + '.xlsx'
 
-    # Strip string whitespace
-    data_copy = data_copy.astype(str).applymap(lambda x: x.strip())
+        data = pd.read_csv(file_path)
+        data_copy = data.copy()
 
-    # Remove Richmond, Charlottesville, and Henrico cities
-    cities_to_remove = ['Richmond', 'Charlottesville', 'Henrico']
-    data_copy = data_copy[(~data_copy['Company City'].isin(cities_to_remove))|(~data_copy['Contact City'].isin(cities_to_remove))]
+        # Strip string whitespace
+        data_copy = data_copy.astype(str).applymap(lambda x: x.strip())
 
-    ### Data clean - phone #'s
-    # Define the phone number columns to process
-    phone_columns = data_copy.filter(regex='^Contact Phone \\d+$').columns.to_list()
+        # Remove Richmond, Charlottesville, and Henrico cities
+        cities_to_remove = ['Richmond', 'Charlottesville', 'Henrico']
+        data_copy = data_copy[(~data_copy['Company City'].isin(cities_to_remove))|(~data_copy['Contact City'].isin(cities_to_remove))]
 
-    # Apply phone formatting
-    data_copy[phone_columns] = data_copy[phone_columns].applymap(
-        lambda x:
-            clean_numbers_list(x) if ',' in x 
-            else clean_phone_number(x) if x!='nan' 
-            else None
-        )
+        ### Data clean - phone #'s
+        # Define the phone number columns to process
+        phone_columns = data_copy.filter(regex='^Contact Phone \\d+$').columns.to_list()
 
-    # Remove 804, 757, 540 area codes from all data
-    area_codes_to_remove = ['(804)', '(757)', '(540)']
-    data_copy = data_copy[~data_copy['Contact Phone 1'].str.startswith(tuple(area_codes_to_remove), na=False)]
+        # Apply phone formatting
+        data_copy[phone_columns] = data_copy[phone_columns].applymap(
+            lambda x:
+                clean_numbers_list(x) if ',' in x 
+                else clean_phone_number(x) if x!='nan' 
+                else None
+            )
 
-    # Function returns None for international numbers, so remove only international contacts with dropna
-    data_phone = data_copy.dropna(subset=phone_columns,how='all').reset_index(drop=True)
+        # Remove 804, 757, 540 area codes from all data
+        area_codes_to_remove = ['(804)', '(757)', '(540)']
+        data_copy = data_copy[~data_copy['Contact Phone 1'].str.startswith(tuple(area_codes_to_remove), na=False)]
 
-    # Keep only relevant columns for final data
-    phone_columns = ['First Name'] + phone_columns
-    # Filter columns
-    data_phone = data_phone[phone_columns]
+        # Function returns None for international numbers, so remove only international contacts with dropna
+        data_phone = data_copy.dropna(subset=phone_columns,how='all').reset_index(drop=True)
+        # Keep only first 3 phone cols
+        data_phone = data_phone[['First Name'] + data_phone.filter(regex='Contact Phone [123](?!0)').columns.to_list()]
 
-    ### Data clean - emails
-    email_columns = ['First Name','Company Name','Contact LI Profile URL','Primary Email'] + data_copy.filter(regex='^Email').columns.to_list()
-    # Keep email columns
-    data_email = data_copy[email_columns]
+        # Reformat Total AI columns from % to int
+        data_phone[data_phone.filter(like='AI').columns] = data_phone.filter(like='AI').applymap(lambda x: int(re.sub('%','',x)) if x!='nan' else 0)
+        # Only keep #s with AI>20
+        data_phone = data_phone[data_phone['Contact Phone 1 Total AI']>=20].reset_index(drop=True)
+        # Remove Contact 2 and 3 if AI<20
+        data_phone['Contact Phone 2'][data_phone['Contact Phone 2 Total AI'] < 20] = 'None'
+        data_phone['Contact Phone 3'][data_phone['Contact Phone 3 Total AI'] < 20] = 'None'
+
+        # Remove people with all invalid phone #s
+        data_phone = data_phone[
+            ((data_phone.filter(regex='Contact Phone \d$') == 'None') | 
+            data_phone.filter(regex='Contact Phone \d$').isna()).apply(lambda x: sum(x),axis=1) < 3
+        ].reset_index(drop=True)
+
+        # Keep only phone # columns
+        data_phone = data_phone[['First Name'] + phone_columns[:3]]
+        # Remove extensions
+        data_phone[phone_columns[:3]] = data_phone[phone_columns[:3]].applymap(lambda x: 'None' if 'x' in str(x) else x)
+        
+        # Validate phone #s
+        data_phone_val = pd.concat(
+            [pd.concat([validate_phone(x,str(y)) for y in data_phone[x]]).reset_index(drop=True) 
+            for x in data_phone.filter(like='Contact')],
+        axis=1).reset_index(drop=True)
+        
+        # Join names to numbers
+        data_phone = pd.concat([data_phone['First Name'],data_phone_val],axis=1)
+        # Reformat phone #s
+        data_phone[data_phone.filter(like='PhoneNumber').columns] = data_phone.filter(like='PhoneNumber').applymap(lambda x: '' if x=='' else clean_phone_number(x))
+
+
+        ### Data clean - emails
+        email_columns = ['First Name','Company Name','Contact LI Profile URL','Primary Email'] + data_copy.filter(regex='^Email').columns.to_list()
+        # Keep email columns
+        data_email = data_copy[email_columns]
+
 
 # Download button
 if file_path is not None:
