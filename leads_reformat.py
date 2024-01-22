@@ -252,16 +252,10 @@ if file_path is not None:
             # Keep email columns
             data_email = data_copy[email_columns].reset_index(drop=True)
 
-    st.download_button(
-        label="Download Formatted Excel Workbook",
-        data=write_excel(data_phone,data_email),
-        file_name=excel_path
-    )
-
     # Download button
-    # if file_path is not None:
-    #     st.download_button(
-    #         label="Download Formatted Excel Workbook",
-    #         data=write_excel(data_phone,data_email),
-    #         file_name=excel_path
-    #     )
+    if file_path is not None:
+        st.download_button(
+            label="Download Formatted Excel Workbook",
+            data=write_excel(data_phone,data_email),
+            file_name=excel_path
+        )
