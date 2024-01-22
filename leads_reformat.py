@@ -5,9 +5,12 @@ from io import BytesIO
 import regex as re
 import requests
 import urllib3
+from datetime import date
+
 urllib3.disable_warnings()
 
 APIKEY = '5ab4064c-e88a-40c0-9358-290709f22db0'
+today = date.today()
 
 #%% Functions
 def clean_phone_number(phone):
@@ -145,7 +148,7 @@ if on:
     file_path_old = st.file_uploader('Upload Old Contacts File',type=['csv'])
 # file_path = 'MyContacts_export_flang@keitercpa.com_2023-12-07-13-10-07_raw.csv'
 if file_path is not None:
-    excel_path = 'cleaned_lead_list_' + re.search('\d{4}(-\d{2}){5}',file_path.name)[0] + '.xlsx'
+    excel_path = 'cleaned_' + file_path.name + '_' + today.strftime("%y") + '_' + today.strftime("%m") + '_' + today.strftime("%d") + '_' + '.xlsx'
 
     with st.spinner():
 
@@ -188,7 +191,10 @@ if file_path is not None:
         # Function returns None for international numbers, so remove only international contacts with dropna
         data_phone = data_copy.dropna(subset=phone_columns,how='all').reset_index(drop=True)
         # Keep only first 3 phone cols
-        data_phone = data_phone[['First Name','Contact LI Profile URL'] + data_phone.filter(regex='Contact Phone [123](?!0)').columns.to_list()]
+        data_phone = data_phone[
+            ['First Name','Contact LI Profile URL','Contact State','Company State'] + 
+            data_phone.filter(regex='Contact Phone [123](?!0)').columns.to_list()
+        ]
 
         # Reformat Total AI columns from % to int
         data_phone[data_phone.filter(like='AI').columns] = data_phone.filter(like='AI').applymap(lambda x: int(re.sub('%','',x)) if x!='nan' else 0)
@@ -205,7 +211,7 @@ if file_path is not None:
         ].reset_index(drop=True)
 
         # Keep only phone # columns
-        data_phone = data_phone[['First Name','Contact LI Profile URL'] + phone_columns[:3]]
+        data_phone = data_phone[['First Name','Contact LI Profile URL','Contact State','Company State'] + phone_columns[:3]]
         # Remove extensions
         data_phone[phone_columns[:3]] = data_phone[phone_columns[:3]].applymap(lambda x: 'None' if 'x' in str(x) else x)
         
@@ -216,13 +222,14 @@ if file_path is not None:
         axis=1).reset_index(drop=True)
         
         # Join names to numbers
-        data_phone = pd.concat([data_phone[['First Name','Contact LI Profile URL']],data_phone_val],axis=1)
+        data_phone = pd.concat([data_phone[['First Name','Contact LI Profile URL','Contact State','Company State']],data_phone_val],axis=1)
         # Reformat phone #s
         data_phone[data_phone.filter(like='PhoneNumber').columns] = data_phone.filter(like='PhoneNumber').applymap(lambda x: '' if x=='' else clean_phone_number(x))
         # Reorder columns
         data_phone = data_phone[
             ['First Name'] + 
             data_phone.filter(like='PhoneNumber').columns.to_list() + 
+            ['Contact State','Company State'] +
             [x for x in data_phone if x not in ['First Name','Contact LI Profile URL'] + data_phone.filter(like='PhoneNumber').columns.to_list()] + 
             ['Contact LI Profile URL']
         ]
