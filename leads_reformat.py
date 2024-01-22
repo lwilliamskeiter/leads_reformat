@@ -138,17 +138,30 @@ st.set_page_config(
     #  layout="wide",
 )
 
-# Read file
-file_path = st.file_uploader('Upload Contacts File',type=['csv'])
+# Read file(s)
+file_path = st.file_uploader('Upload New Contacts File',type=['csv'])
+on = st.toggle('Add Old Contacts File')
+if on:
+    file_path_old = st.file_uploader('Upload Old Contacts File',type=['csv'])
 # file_path = 'MyContacts_export_flang@keitercpa.com_2023-12-07-13-10-07_raw.csv'
 if file_path is not None:
+    excel_path = 'cleaned_lead_list_' + re.search('\d{4}(-\d{2}){5}',file_path.name)[0] + '.xlsx'
 
     with st.spinner():
-        excel_path = 'cleaned_lead_list_' + re.search('\d{4}(-\d{2}){5}',file_path.name)[0] + '.xlsx'
 
         data = pd.read_csv(file_path)
         data_copy = data.copy()
 
+        # If old file provided
+        if on and file_path_old is not None:
+            data_old = pd.read_csv(file_path_old)
+            data_copy = (
+                data_copy
+                .merge(data_old[['Contact Full Name','Company Name']],how='outer',on=['Contact Full Name','Company Name'],indicator=True)
+                .query('_merge == "left_only"')
+                .drop(columns='_merge')
+            )
+        
         # Strip string whitespace
         data_copy = data_copy.astype(str).applymap(lambda x: x.strip())
 
@@ -210,7 +223,7 @@ if file_path is not None:
         data_phone = data_phone[
             ['First Name'] + 
             data_phone.filter(like='PhoneNumber').columns.to_list() + 
-            [x for x in data_phone if x not in ['First Name'] + data_phone.filter(like='PhoneNumber').columns.to_list()] + 
+            [x for x in data_phone if x not in ['First Name','Contact LI Profile URL'] + data_phone.filter(like='PhoneNumber').columns.to_list()] + 
             ['Contact LI Profile URL']
         ]
 
