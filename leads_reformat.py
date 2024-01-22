@@ -199,7 +199,7 @@ if file_path is not None:
         # Validate phone #s
         data_phone_val = pd.concat(
             [pd.concat([validate_phone(x,str(y)) for y in data_phone[x]]).reset_index(drop=True) 
-            for x in data_phone.filter(like='Contact')],
+            for x in data_phone.filter(like='Contact Phone')],
         axis=1).reset_index(drop=True)
         
         # Join names to numbers
