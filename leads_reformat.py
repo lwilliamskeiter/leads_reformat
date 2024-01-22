@@ -52,7 +52,7 @@ def validate_phone(colname,PHONE):
         # If Phone is not empty, get just phone # (no hypen or parantheses)
         PHONE = re.sub('[\(\)\- ]','',PHONE)
         # API request
-        resp = requests.get(f'https://api.phonevalidator.com/api/v3/phonesearch?apikey={APIKEY}&phone={PHONE}&type=fake,basic',verify=False)
+        resp = requests.get(f'https://api.phonevalidator.com/api/v3/phonesearch?apikey={APIKEY}&phone={PHONE}&type=basic',verify=False)
         # Get PhoneBasic info
         phone_basic = pd.DataFrame.from_dict(resp.json().get('PhoneBasic'),orient='index').T
     
@@ -65,7 +65,6 @@ def validate_phone(colname,PHONE):
 def write_excel(data_phone,data_email):
     output = BytesIO()
     writer = pd.ExcelWriter(output, engine="xlsxwriter")
-    writer = pd.ExcelWriter(excel_path, engine="xlsxwriter")
 
     # Convert the dataframes to an XlsxWriter Excel object.
     data_phone.to_excel(writer, sheet_name="Phone", index=False)
@@ -176,7 +175,7 @@ if file_path is not None:
         # Function returns None for international numbers, so remove only international contacts with dropna
         data_phone = data_copy.dropna(subset=phone_columns,how='all').reset_index(drop=True)
         # Keep only first 3 phone cols
-        data_phone = data_phone[['First Name'] + data_phone.filter(regex='Contact Phone [123](?!0)').columns.to_list()]
+        data_phone = data_phone[['First Name','Contact LI Profile URL'] + data_phone.filter(regex='Contact Phone [123](?!0)').columns.to_list()]
 
         # Reformat Total AI columns from % to int
         data_phone[data_phone.filter(like='AI').columns] = data_phone.filter(like='AI').applymap(lambda x: int(re.sub('%','',x)) if x!='nan' else 0)
@@ -193,7 +192,7 @@ if file_path is not None:
         ].reset_index(drop=True)
 
         # Keep only phone # columns
-        data_phone = data_phone[['First Name'] + phone_columns[:3]]
+        data_phone = data_phone[['First Name','Contact LI Profile URL'] + phone_columns[:3]]
         # Remove extensions
         data_phone[phone_columns[:3]] = data_phone[phone_columns[:3]].applymap(lambda x: 'None' if 'x' in str(x) else x)
         
@@ -204,10 +203,16 @@ if file_path is not None:
         axis=1).reset_index(drop=True)
         
         # Join names to numbers
-        data_phone = pd.concat([data_phone['First Name'],data_phone_val],axis=1)
+        data_phone = pd.concat([data_phone[['First Name','Contact LI Profile URL']],data_phone_val],axis=1)
         # Reformat phone #s
         data_phone[data_phone.filter(like='PhoneNumber').columns] = data_phone.filter(like='PhoneNumber').applymap(lambda x: '' if x=='' else clean_phone_number(x))
-
+        # Reorder columns
+        data_phone = data_phone[
+            ['First Name'] + 
+            data_phone.filter(like='PhoneNumber').columns.to_list() + 
+            [x for x in data_phone if x not in ['First Name'] + data_phone.filter(like='PhoneNumber').columns.to_list()] + 
+            ['Contact LI Profile URL']
+        ]
 
         ### Data clean - emails
         email_columns = ['First Name','Company Name','Contact LI Profile URL','Primary Email'] + data_copy.filter(regex='^Email').columns.to_list()
