@@ -52,8 +52,8 @@ def write_excel(data_phone,data_email):
     # Set column font sizes and widths
     wkst_phone.set_column(0, 0, max([data_phone['First Name'].apply(len).max(),14]), workbook.add_format({'font_size': 14}))
     wkst_phone.set_column(1, data_phone.shape[1],
-                        data_phone.drop(columns='First Name').applymap(lambda x: 0 if x is None else len(str(x))).max().max() + 1,
-                        workbook.add_format({'font_size': 24}))
+                          data_phone.drop(columns='First Name').applymap(lambda x: 0 if x is None else len(str(x))).max().max() + 10,
+                          workbook.add_format({'font_size': 24}))
 
     # Set table style
     wkst_phone.add_table(0, 0, data_phone.shape[0], data_phone.shape[1]-1,
@@ -110,7 +110,7 @@ st.set_page_config(
 
 # Read file
 file_path = st.file_uploader('Upload Contacts File',type=['csv'])
-# file_path = file_path = 'MyContacts_export_flang@keitercpa.com_2023-12-07-13-28-26_raw.csv'  
+# file_path = 'MyContacts_export_flang@keitercpa.com_2023-12-07-13-28-26_raw.csv'  
 if file_path is not None:
     excel_path = 'cleaned_lead_list_' + re.search('\d{4}(-\d{2}){5}',file_path.name)[0] + '.xlsx'
 
