@@ -150,9 +150,9 @@ if on:
 if file_path is not None:
     if on:
         if file_path_old is not None:
-            st.button('Reformat leads!',key='button',type='primary')
+            st.button('Reformat leads!',key='button',type='secondary')
     else:
-        st.button('Reformat leads!',key='button',type='primary')
+        st.button('Reformat leads!',key='button',type='secondary')
 
 if file_path is not None:
     excel_path = 'cleaned_' + re.sub('\.csv','',file_path.name) + '_' + today.strftime("%y") + '_' + today.strftime("%m") + '_' + today.strftime("%d") + '.xlsx'
@@ -253,7 +253,7 @@ if file_path is not None:
             data_email = data_copy[email_columns].reset_index(drop=True)
 
     # Download button
-    if file_path is not None:
+    if file_path is not None and st.session_state['button']:
         st.download_button(
             label="Download Formatted Excel Workbook",
             data=write_excel(data_phone,data_email),
