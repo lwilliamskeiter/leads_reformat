@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
-import regex as re
 import numpy as np
+import regex as re
 from io import BytesIO
 
 
