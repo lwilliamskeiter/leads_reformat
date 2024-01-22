@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import regex as re
 from io import BytesIO
+import regex as re
 
 
 def clean_phone_number(phone):
