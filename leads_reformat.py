@@ -249,12 +249,10 @@ if file_path is not None:
             email_columns = ['First Name','Company Name','Contact LI Profile URL','Primary Email'] + data_copy.filter(regex='^Email').columns.to_list()
             # Keep email columns
             data_email = data_copy[email_columns]
-    else:
-        st.warning('You need to upload your new contacts file!')
 
 
     # Download button
-    if file_path is not None:
+    if file_path is not None and st.session_state['button']:
         st.download_button(
             label="Download Formatted Excel Workbook",
             data=write_excel(data_phone,data_email),
