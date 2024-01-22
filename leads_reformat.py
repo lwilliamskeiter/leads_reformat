@@ -120,7 +120,7 @@ def write_excel(data_phone,data_email):
         wkst_email.set_column(col, col, 25, workbook.add_format({'font_size': 14}))
 
     # Change row height to 36
-    for row in range(0,data_email.shape[0]):
+    for row in range(0,data_email.shape[0]+1):
         wkst_email.set_row(row,36)
 
     # Set table style
@@ -155,8 +155,8 @@ if file_path is not None:
         st.button('Reformat leads!',key='button',type='primary')
 
 if file_path is not None:
+    excel_path = 'cleaned_' + re.sub('\.csv','',file_path.name) + '_' + today.strftime("%y") + '_' + today.strftime("%m") + '_' + today.strftime("%d") + '.xlsx'
     if st.session_state['button']:
-        excel_path = 'cleaned_' + re.sub('\.csv','',file_path.name) + '_' + today.strftime("%y") + '_' + today.strftime("%m") + '_' + today.strftime("%d") + '.xlsx'
 
         with st.spinner():
 
@@ -252,10 +252,11 @@ if file_path is not None:
             # Keep email columns
             data_email = data_copy[email_columns].reset_index(drop=True)
 
-            st.download_button(
-            label="Download Formatted Excel Workbook",
-            data=write_excel(data_phone,data_email),
-            file_name=excel_path)
+    st.download_button(
+        label="Download Formatted Excel Workbook",
+        data=write_excel(data_phone,data_email),
+        file_name=excel_path
+    )
 
     # Download button
     # if file_path is not None:
