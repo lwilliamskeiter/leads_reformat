@@ -97,7 +97,7 @@ def write_excel(data_phone,data_email):
     for col_num, value in enumerate(data_phone.columns.values):
         wkst_phone.write(0, col_num, value, workbook.add_format({'font_size': 14, 'bold': True}))
     # Change row height to 36
-    for row in range(0,len(data_phone)-1):
+    for row in range(0,data_phone.shape[0]-1):
         wkst_phone.set_row(row,36)
 
     ### Set Email sheet format
@@ -120,7 +120,7 @@ def write_excel(data_phone,data_email):
         wkst_email.set_column(col, col, 25, workbook.add_format({'font_size': 14}))
 
     # Change row height to 36
-    for row in range(0,len(data_email)-1):
+    for row in range(0,data_email.shape[0]-1):
         wkst_email.set_row(row,36)
 
     # Set table style
@@ -241,7 +241,8 @@ if file_path is not None:
                 ['First Name'] + 
                 data_phone.filter(like='PhoneNumber').columns.to_list() + 
                 ['Contact State','Company State'] +
-                [x for x in data_phone if x not in ['First Name','Contact LI Profile URL'] + data_phone.filter(like='PhoneNumber').columns.to_list()] + 
+                [x for x in data_phone if x not in 
+                 ['First Name','Contact LI Profile URL','Contact State','Company State'] + data_phone.filter(like='PhoneNumber').columns.to_list()] + 
                 ['Contact LI Profile URL']
             ]
 
