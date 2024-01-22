@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 # from io import BytesIO
-# import regex as re
+import regex as re
 
 
 def clean_phone_number(phone):
