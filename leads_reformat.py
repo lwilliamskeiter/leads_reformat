@@ -147,7 +147,8 @@ on = st.toggle('Add Old Contacts File')
 if on:
     file_path_old = st.file_uploader('Upload Old Contacts File',type=['csv'])
 
-st.button('Reformat leads!',key='button',type='primary')
+if file_path is not None:
+    st.button('Reformat leads!',key='button',type='primary')
 
 if st.session_state['button']:
 
