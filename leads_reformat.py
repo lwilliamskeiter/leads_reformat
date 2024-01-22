@@ -105,7 +105,7 @@ def write_excel(data_phone,data_email):
 #%% APP
 st.set_page_config(
      page_title='Leads File Reformat',
-     layout="wide",
+    #  layout="wide",
 )
 
 # Read file
