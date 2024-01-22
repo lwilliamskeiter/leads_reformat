@@ -150,8 +150,9 @@ if on:
 st.button('Reformat leads!',key='button',type='primary')
 
 if st.session_state['button']:
+
     if file_path is not None:
-        excel_path = 'cleaned_' + file_path.name + '_' + today.strftime("%y") + '_' + today.strftime("%m") + '_' + today.strftime("%d") + '_' + '.xlsx'
+        excel_path = 'cleaned_' + re.sub('\.csv','',file_path.name) + '_' + today.strftime("%y") + '_' + today.strftime("%m") + '_' + today.strftime("%d") + '_' + '.xlsx'
 
         with st.spinner():
 
@@ -159,14 +160,17 @@ if st.session_state['button']:
             data_copy = data.copy()
 
             # If old file provided
-            if on and file_path_old is not None:
-                data_old = pd.read_csv(file_path_old)
-                data_copy = (
-                    data_copy
-                    .merge(data_old[['Contact Full Name','Company Name']],how='outer',on=['Contact Full Name','Company Name'],indicator=True)
-                    .query('_merge == "left_only"')
-                    .drop(columns='_merge')
-                )
+            if on:
+                if file_path_old is not None:
+                    data_old = pd.read_csv(file_path_old)
+                    data_copy = (
+                        data_copy
+                        .merge(data_old[['Contact Full Name','Company Name']],how='outer',on=['Contact Full Name','Company Name'],indicator=True)
+                        .query('_merge == "left_only"')
+                        .drop(columns='_merge')
+                    )
+                else:
+                    st.warning('You need to upload your old contacts file!')
             
             # Strip string whitespace
             data_copy = data_copy.astype(str).applymap(lambda x: x.strip())
@@ -241,6 +245,8 @@ if st.session_state['button']:
             email_columns = ['First Name','Company Name','Contact LI Profile URL','Primary Email'] + data_copy.filter(regex='^Email').columns.to_list()
             # Keep email columns
             data_email = data_copy[email_columns]
+    else:
+        st.warning('You need to upload your new contacts file!')
 
 
     # Download button
