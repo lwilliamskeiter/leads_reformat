@@ -148,7 +148,11 @@ if on:
     file_path_old = st.file_uploader('Upload Old Contacts File',type=['csv'])
 
 if file_path is not None:
-    st.button('Reformat leads!',key='button',type='primary')
+    if on:
+        if file_path_old is not None:
+            st.button('Reformat leads!',key='button',type='primary')
+    else:
+        st.button('Reformat leads!',key='button',type='primary')
 
 if st.session_state['button']:
 
