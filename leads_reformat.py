@@ -109,7 +109,7 @@ st.set_page_config(
 )
 
 # Read file
-file_path = st.file_uploader('Upload Contacts File')
+file_path = st.file_uploader('Upload Contacts File',type=['csv'])
 # file_path = file_path = 'MyContacts_export_flang@keitercpa.com_2023-12-07-13-28-26_raw.csv'  
 if file_path is not None:
     excel_path = 'cleaned_lead_list_' + re.search('\d{4}(-\d{2}){5}',file_path.name)[0] + '.xlsx'
@@ -161,7 +161,7 @@ if file_path is not None:
 
 if file_path is not None:
     st.download_button(
-        label="Download Excel workbook",
+        label="Download Formatted Excel Workbook",
         data=write_excel(data_phone,data_email),
         file_name=excel_path
     )
