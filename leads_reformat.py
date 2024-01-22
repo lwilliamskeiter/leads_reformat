@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from io import BytesIO
+# from io import BytesIO
 import regex as re
 
 
@@ -159,9 +159,9 @@ if file_path is not None:
 
 # print("Data processed and saved to", excel_path)
 
-if file_path is not None:
-    st.download_button(
-        label="Download Excel workbook",
-        data=write_excel(data_phone,data_email),
-        file_name=excel_path
-    )
+# if file_path is not None:
+#     st.download_button(
+#         label="Download Excel workbook",
+#         data=write_excel(data_phone,data_email),
+#         file_name=excel_path
+#     )
