@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-# from io import BytesIO
+from io import BytesIO
 import regex as re
 
 
@@ -112,7 +112,7 @@ st.set_page_config(
 file_path = st.file_uploader('Upload Contacts File')
 # file_path = file_path = 'MyContacts_export_flang@keitercpa.com_2023-12-07-13-28-26_raw.csv'  
 if file_path is not None:
-    excel_path = 'cleaned_lead_list_' + re.search('\d{4}(-\d{2}){5}',file_path)[0] + '.xlsx'
+    excel_path = 'cleaned_lead_list_' + re.search('\d{4}(-\d{2}){5}',file_path.name)[0] + '.xlsx'
 
     data = pd.read_csv(file_path)
     data_copy = data.copy()
@@ -159,9 +159,9 @@ if file_path is not None:
 
 # print("Data processed and saved to", excel_path)
 
-# if file_path is not None:
-#     st.download_button(
-#         label="Download Excel workbook",
-#         data=write_excel(data_phone,data_email),
-#         file_name=excel_path
-#     )
+if file_path is not None:
+    st.download_button(
+        label="Download Excel workbook",
+        data=write_excel(data_phone,data_email),
+        file_name=excel_path
+    )
