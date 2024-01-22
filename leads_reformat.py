@@ -52,7 +52,7 @@ def write_excel(data_phone,data_email):
     # Set column font sizes and widths
     wkst_phone.set_column(0, 0, max([data_phone['First Name'].apply(len).max(),14]), workbook.add_format({'font_size': 14}))
     wkst_phone.set_column(1, data_phone.shape[1],
-                          data_phone.drop(columns='First Name').applymap(lambda x: 0 if x is None else len(str(x))).max().max()*1.5,
+                          data_phone.drop(columns='First Name').applymap(lambda x: 0 if x is None else len(str(x))).max().max()*1.25,
                           workbook.add_format({'font_size': 24}))
 
     # Set table style
