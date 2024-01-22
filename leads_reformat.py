@@ -96,7 +96,7 @@ def write_excel(data_phone,data_email):
                         'columns': [{'header': x} for x in data_email]})
 
     ### Close file write
-    writer.save()
+    writer.close()
 
     processed_data = output.getvalue()
     return processed_data
