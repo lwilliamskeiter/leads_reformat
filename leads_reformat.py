@@ -257,5 +257,6 @@ if file_path is not None:
         st.download_button(
             label="Download Formatted Excel Workbook",
             data=write_excel(data_phone,data_email),
-            file_name=excel_path
+            file_name=excel_path,
+            type='primary'
         )
