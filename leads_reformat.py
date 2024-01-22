@@ -97,7 +97,7 @@ def write_excel(data_phone,data_email):
     for col_num, value in enumerate(data_phone.columns.values):
         wkst_phone.write(0, col_num, value, workbook.add_format({'font_size': 14, 'bold': True}))
     # Change row height to 36
-    for row in range(0,data_phone.shape[0]-1):
+    for row in range(0,data_phone.shape[0]+1):
         wkst_phone.set_row(row,36)
 
     ### Set Email sheet format
@@ -112,7 +112,7 @@ def write_excel(data_phone,data_email):
     url_format.font_size = 14
     # Apply to email addresses
     for col in np.where(data_email.columns.str.contains('Primary Email|^Email \d+$',regex=True))[0]:
-        for row in range(data_email.shape[0]-1):
+        for row in range(data_email.shape[0]):
             wkst_email.write_url(row, col, '' if data_email.iloc[row,col]=='nan' else 'mailto:'+data_email.iloc[row,col],url_format)
 
     # Set email column widths
@@ -120,7 +120,7 @@ def write_excel(data_phone,data_email):
         wkst_email.set_column(col, col, 25, workbook.add_format({'font_size': 14}))
 
     # Change row height to 36
-    for row in range(0,data_email.shape[0]-1):
+    for row in range(0,data_email.shape[0]):
         wkst_email.set_row(row,36)
 
     # Set table style
@@ -172,6 +172,7 @@ if file_path is not None:
                         .merge(data_old[['Contact Full Name','Company Name']],how='outer',on=['Contact Full Name','Company Name'],indicator=True)
                         .query('_merge == "left_only"')
                         .drop(columns='_merge')
+                        .reset_index(drop=True)
                     )
                 else:
                     st.warning('You need to upload your old contacts file!')
@@ -181,7 +182,7 @@ if file_path is not None:
 
             # Remove Richmond, Charlottesville, and Henrico cities
             cities_to_remove = ['Richmond', 'Charlottesville', 'Henrico']
-            data_copy = data_copy[(~data_copy['Company City'].isin(cities_to_remove))|(~data_copy['Contact City'].isin(cities_to_remove))]
+            data_copy = data_copy[(~data_copy['Company City'].isin(cities_to_remove))|(~data_copy['Contact City'].isin(cities_to_remove))].reset_index(drop=True)
 
             ### Data clean - phone #'s
             # Define the phone number columns to process
@@ -197,7 +198,7 @@ if file_path is not None:
 
             # Remove 804, 757, 540 area codes from all data
             area_codes_to_remove = ['(804)', '(757)', '(540)']
-            data_copy = data_copy[~data_copy['Contact Phone 1'].str.startswith(tuple(area_codes_to_remove), na=False)]
+            data_copy = data_copy[~data_copy['Contact Phone 1'].str.startswith(tuple(area_codes_to_remove), na=False)].reset_index(drop=True)
 
             # Function returns None for international numbers, so remove only international contacts with dropna
             data_phone = data_copy.dropna(subset=phone_columns,how='all').reset_index(drop=True)
@@ -249,13 +250,20 @@ if file_path is not None:
             ### Data clean - emails
             email_columns = ['First Name','Company Name','Contact LI Profile URL','Primary Email'] + data_copy.filter(regex='^Email').columns.to_list()
             # Keep email columns
-            data_email = data_copy[email_columns]
+            data_email = data_copy[email_columns].reset_index(drop=True)
 
 
     # Download button
-    if file_path is not None and st.session_state['button']:
+    if on:
+        if file_path_old is not None:
+            st.download_button(
+                label="Download Formatted Excel Workbook",
+                data=write_excel(data_phone,data_email),
+                file_name=excel_path
+            )
+    else:
         st.download_button(
-            label="Download Formatted Excel Workbook",
-            data=write_excel(data_phone,data_email),
-            file_name=excel_path
-        )
+                label="Download Formatted Excel Workbook",
+                data=write_excel(data_phone,data_email),
+                file_name=excel_path
+            )
