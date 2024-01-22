@@ -154,9 +154,8 @@ if file_path is not None:
     else:
         st.button('Reformat leads!',key='button',type='primary')
 
-if st.session_state['button']:
-
-    if file_path is not None:
+if file_path is not None:
+    if st.session_state['button']:
         excel_path = 'cleaned_' + re.sub('\.csv','',file_path.name) + '_' + today.strftime("%y") + '_' + today.strftime("%m") + '_' + today.strftime("%d") + '_' + '.xlsx'
 
         with st.spinner():
