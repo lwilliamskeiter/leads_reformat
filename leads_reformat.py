@@ -4,7 +4,7 @@ import numpy as np
 from io import BytesIO
 import regex as re
 
-
+#%% Functions
 def clean_phone_number(phone):
     # Remove phone extension and non-numeric characters
     clean_phone = re.sub('^\+','',re.sub('[^0-9]','',re.split(' [a-z]+.+',phone)[0]))
@@ -110,7 +110,7 @@ st.set_page_config(
 
 # Read file
 file_path = st.file_uploader('Upload Contacts File',type=['csv'])
-# file_path = 'MyContacts_export_flang@keitercpa.com_2023-12-07-13-28-26_raw.csv'  
+
 if file_path is not None:
     excel_path = 'cleaned_lead_list_' + re.search('\d{4}(-\d{2}){5}',file_path.name)[0] + '.xlsx'
 
@@ -124,7 +124,7 @@ if file_path is not None:
     cities_to_remove = ['Richmond', 'Charlottesville', 'Henrico']
     data_copy = data_copy[(~data_copy['Company City'].isin(cities_to_remove))|(~data_copy['Contact City'].isin(cities_to_remove))]
 
-    # Data clean - phone #'s
+    ### Data clean - phone #'s
     # Define the phone number columns to process
     phone_columns = data_copy.filter(regex='^Contact Phone \\d+$').columns.to_list()
 
@@ -144,21 +144,16 @@ if file_path is not None:
     data_phone = data_copy.dropna(subset=phone_columns,how='all').reset_index(drop=True)
 
     # Keep only relevant columns for final data
-    output_columns = ['First Name'] + phone_columns
+    phone_columns = ['First Name'] + phone_columns
     # Filter columns
-    data_phone = data_phone[output_columns]
+    data_phone = data_phone[phone_columns]
 
-
-    # Data clean - emails
+    ### Data clean - emails
     email_columns = ['First Name','Company Name','Contact LI Profile URL','Primary Email'] + data_copy.filter(regex='^Email').columns.to_list()
-
     # Keep email columns
     data_email = data_copy[email_columns]
 
-
-
-# print("Data processed and saved to", excel_path)
-
+# Download button
 if file_path is not None:
     st.download_button(
         label="Download Formatted Excel Workbook",
