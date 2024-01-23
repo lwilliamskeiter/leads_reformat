@@ -157,8 +157,9 @@ if on:
     file_path_old = st.file_uploader('Upload Old Contacts File',type=['csv'])
 
 if file_path is not None:
-    if on and file_path_old is not None:
-        st.button('Reformat leads!',key='button',on_click=click_button)
+    if on:
+        if file_path_old is not None:
+            st.button('Reformat leads!',key='button',on_click=click_button)
     else:
         st.button('Reformat leads!',key='button',on_click=click_button)
 
@@ -167,6 +168,7 @@ if file_path is not None:
     
     if st.session_state.clicked:
 
+        # Read in files
         data = pd.read_csv(file_path)
         data_copy = data.copy()
 
