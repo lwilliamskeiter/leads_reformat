@@ -141,6 +141,9 @@ st.set_page_config(
     #  layout="wide",
 )
 
+def click_button():
+    st.session_state.clicked = True
+
 # Read file(s)
 file_path = st.file_uploader('Upload New Contacts File',type=['csv'])
 on = st.toggle('Add Old Contacts File')
@@ -148,16 +151,15 @@ if on:
     file_path_old = st.file_uploader('Upload Old Contacts File',type=['csv'])
 
 if file_path is not None:
-    if on:
-        if file_path_old is not None:
-            st.button('Reformat leads!',key='button',type='secondary')
+    if on and file_path_old is not None:
+        st.button('Reformat leads!',key='button',on_click=click_button)
     else:
-        st.button('Reformat leads!',key='button',type='secondary')
+        st.button('Reformat leads!',key='button',on_click=click_button)
 
 if file_path is not None:
     excel_path = 'cleaned_' + re.sub('\.csv','',file_path.name) + '_' + today.strftime("%y") + '_' + today.strftime("%m") + '_' + today.strftime("%d") + '.xlsx'
     
-    if st.session_state['button']:
+    if st.session_state.clicked:
 
         with st.spinner():
 
