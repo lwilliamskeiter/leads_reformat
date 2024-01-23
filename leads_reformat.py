@@ -144,6 +144,9 @@ st.set_page_config(
 def click_button():
     st.session_state.clicked = True
 
+def reset_button():
+    st.session_state.clicked = False
+
 if 'clicked' not in st.session_state:
     st.session_state.clicked = False
 
@@ -264,16 +267,16 @@ if file_path is not None:
                 st.download_button(
                     label="Download Formatted Excel Workbook",
                     data=write_excel(data_phone,data_email),
-                    file_name=excel_path,
-                    type='primary'
+                    file_name=excel_path
                 )
+            st.button('Reset',on_click=reset_button)
         else:
             st.download_button(
                 label="Download Formatted Excel Workbook",
                 data=write_excel(data_phone,data_email),
-                file_name=excel_path,
-                type='primary'
+                file_name=excel_path
             )
+            st.button('Reset',on_click=reset_button)
 
     # # Download button
     # if file_path is not None and st.session_state['button']:
