@@ -167,25 +167,25 @@ if file_path is not None:
     
     if st.session_state.clicked:
 
+        data = pd.read_csv(file_path)
+        data_copy = data.copy()
+
+        # If old file provided
+        if on:
+            if file_path_old is not None:
+                data_old = pd.read_csv(file_path_old)
+                data_copy = (
+                    data_copy
+                    .merge(data_old[['Contact Full Name','Company Name']],how='outer',on=['Contact Full Name','Company Name'],indicator=True)
+                    .query('_merge == "left_only"')
+                    .drop(columns='_merge')
+                    .reset_index(drop=True)
+                )
+            else:
+                st.warning('You need to upload your old contacts file!')
+            
         with st.spinner():
 
-            data = pd.read_csv(file_path)
-            data_copy = data.copy()
-
-            # If old file provided
-            if on:
-                if file_path_old is not None:
-                    data_old = pd.read_csv(file_path_old)
-                    data_copy = (
-                        data_copy
-                        .merge(data_old[['Contact Full Name','Company Name']],how='outer',on=['Contact Full Name','Company Name'],indicator=True)
-                        .query('_merge == "left_only"')
-                        .drop(columns='_merge')
-                        .reset_index(drop=True)
-                    )
-                else:
-                    st.warning('You need to upload your old contacts file!')
-            
             # Strip string whitespace
             data_copy = data_copy.astype(str).applymap(lambda x: x.strip())
 
