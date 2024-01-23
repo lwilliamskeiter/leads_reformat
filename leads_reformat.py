@@ -151,15 +151,13 @@ if file_path is not None:
     if on:
         if file_path_old is not None:
             st.button('Reformat leads!',key='button',type='secondary')
-        else:
-            st.warning('You need to upload an old contacts file!')
     else:
         st.button('Reformat leads!',key='button',type='secondary')
 
 if file_path is not None:
     excel_path = 'cleaned_' + re.sub('\.csv','',file_path.name) + '_' + today.strftime("%y") + '_' + today.strftime("%m") + '_' + today.strftime("%d") + '.xlsx'
     
-    if (on and file_path_old is not None) or st.session_state['button']:
+    if st.session_state['button']:
 
         with st.spinner():
 
