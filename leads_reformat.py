@@ -270,7 +270,7 @@ if file_path is not None:
                     file_name=excel_path,
                     type='primary'
                 )
-            st.button('Reset',on_click=reset_button)
+                st.button('Reset',on_click=reset_button)
         else:
             st.download_button(
                 label="Download Formatted Excel Workbook",
