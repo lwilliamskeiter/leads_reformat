@@ -259,20 +259,20 @@ if file_path is not None:
             data_email = data_copy[email_columns].reset_index(drop=True)
         
         
-        if on and file_path_old is not None:
-            st.download_button(
-                label="Download Formatted Excel Workbook",
-                data=write_excel(data_phone,data_email),
-                file_name=excel_path,
-                type='primary'
-            )
-        else:
-            st.download_button(
-                label="Download Formatted Excel Workbook",
-                data=write_excel(data_phone,data_email),
-                file_name=excel_path,
-                type='primary'
-            )
+            if on and file_path_old is not None:
+                st.download_button(
+                    label="Download Formatted Excel Workbook",
+                    data=write_excel(data_phone,data_email),
+                    file_name=excel_path,
+                    type='primary'
+                )
+            else:
+                st.download_button(
+                    label="Download Formatted Excel Workbook",
+                    data=write_excel(data_phone,data_email),
+                    file_name=excel_path,
+                    type='primary'
+                )
 
     # # Download button
     # if file_path is not None and st.session_state['button']:
