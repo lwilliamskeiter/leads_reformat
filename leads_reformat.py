@@ -144,6 +144,9 @@ st.set_page_config(
 def click_button():
     st.session_state.clicked = True
 
+if 'clicked' not in st.session_state:
+    st.session_state.clicked = False
+
 # Read file(s)
 file_path = st.file_uploader('Upload New Contacts File',type=['csv'])
 on = st.toggle('Add Old Contacts File')
