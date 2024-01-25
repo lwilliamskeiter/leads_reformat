@@ -76,7 +76,6 @@ def validate_phone(colname,PHONE):
             # Add new requests to existing dict and save
             phone_requests.update({PHONE:resp})
             pickle.dump(phone_requests, open('phone_requests.p', 'wb'))
-        print(resp)
         # Get PhoneBasic info
         phone_basic = pd.DataFrame.from_dict(resp.json().get('PhoneBasic'),orient='index').T
     
@@ -206,18 +205,17 @@ if file_path is not None:
             else:
                 st.warning('You need to upload your old contacts file!')
             
-        # Strip string whitespace
-        data_copy = data_copy.applymap(lambda x: str(x).strip())
-
-        # Remove Richmond, Charlottesville, and Henrico cities
-        cities_to_remove = ['Richmond', 'Charlottesville', 'Henrico']
-        data_copy = data_copy[~data_copy.filter(like='City').isin(cities_to_remove).any(axis=1)].reset_index(drop=True)
-
-        # Remove 804, 757, 540 area codes from all data
-        area_codes_to_remove = ['(804)', '(757)', '(540)']
-        data_copy = data_copy[~data_copy['Contact Phone 1'].str.startswith(tuple(area_codes_to_remove), na=False)].reset_index(drop=True)
-
         with st.spinner():
+            # Coerce data to str and strip string whitespace
+            data_copy = data_copy.applymap(lambda x: str(x).strip())
+
+            # Remove Richmond, Charlottesville, and Henrico cities
+            cities_to_remove = ['Richmond', 'Charlottesville', 'Henrico']
+            data_copy = data_copy[~data_copy.filter(like='City').isin(cities_to_remove).any(axis=1)].reset_index(drop=True)
+
+            # Remove 804, 757, 540 area codes from all data
+            area_codes_to_remove = ['(804)', '(757)', '(540)']
+            data_copy = data_copy[~data_copy['Contact Phone 1'].str.startswith(tuple(area_codes_to_remove), na=False)].reset_index(drop=True)
 
             ### Data clean - phone #'s
             # Define the phone number columns to process - Keep only first 3 phone cols
@@ -247,13 +245,15 @@ if file_path is not None:
             data_phone = data_phone[
                 ((data_phone[phone_columns].isin(['nan','None'])) | data_phone[phone_columns].isna()).apply(sum,axis=1) < 3
             ].reset_index(drop=True)
+            # print(data_phone)
 
             # Validate phone #s
             data_phone_val = pd.concat(
                 [pd.concat([validate_phone(x,str(y)) for y in data_phone[x]]).reset_index(drop=True) 
-                for x in data_phone.filter(like='Contact Phone')],
+                for x in phone_columns],
             axis=1).reset_index(drop=True)
-            
+            print(data_phone_val)
+
             # Join names to numbers
             data_phone = pd.concat([data_phone[['First Name','Contact LI Profile URL','Contact State','Company State']],data_phone_val],axis=1)
             # Reformat phone #s
