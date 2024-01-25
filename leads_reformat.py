@@ -56,7 +56,7 @@ def clean_numbers_list(phone_list):
 
 # Validate phone numbers
 def validate_phone(colname,PHONE):
-    if PHONE is None or PHONE == 'None' or PHONE == np.nan:
+    if PHONE is None or (PHONE == 'None') or (PHONE == np.nan):
         # If phone # is empty, intiliaze an empty DF
         phone_basic = pd.DataFrame(
             columns = ['PhoneNumber', 'ReportDate', 'LineType', 'PhoneCompany', 'PhoneLocation', 'FakeNumber', 'FakeNumberReason', 'ErrorCode', 'ErrorDescription'],
@@ -205,18 +205,18 @@ if file_path is not None:
             else:
                 st.warning('You need to upload your old contacts file!')
             
+        # Coerce data to str and strip string whitespace
+        data_copy = data_copy.applymap(lambda x: str(x).strip())
+
+        # Remove Richmond, Charlottesville, and Henrico cities
+        cities_to_remove = ['Richmond', 'Charlottesville', 'Henrico']
+        data_copy = data_copy[~data_copy.filter(like='City').isin(cities_to_remove).any(axis=1)].reset_index(drop=True)
+
+        # Remove 804, 757, 540 area codes from all data
+        area_codes_to_remove = ['(804)', '(757)', '(540)']
+        data_copy = data_copy[~data_copy['Contact Phone 1'].str.startswith(tuple(area_codes_to_remove), na=False)].reset_index(drop=True)
+
         with st.spinner():
-            # Coerce data to str and strip string whitespace
-            data_copy = data_copy.applymap(lambda x: str(x).strip())
-
-            # Remove Richmond, Charlottesville, and Henrico cities
-            cities_to_remove = ['Richmond', 'Charlottesville', 'Henrico']
-            data_copy = data_copy[~data_copy.filter(like='City').isin(cities_to_remove).any(axis=1)].reset_index(drop=True)
-
-            # Remove 804, 757, 540 area codes from all data
-            area_codes_to_remove = ['(804)', '(757)', '(540)']
-            data_copy = data_copy[~data_copy['Contact Phone 1'].str.startswith(tuple(area_codes_to_remove), na=False)].reset_index(drop=True)
-
             ### Data clean - phone #'s
             # Define the phone number columns to process - Keep only first 3 phone cols
             phone_columns = data_copy.filter(regex='^Contact Phone [123](?!0)$').columns.to_list()
@@ -252,7 +252,7 @@ if file_path is not None:
                 [pd.concat([validate_phone(x,str(y)) for y in data_phone[x]]).reset_index(drop=True) 
                 for x in phone_columns],
             axis=1).reset_index(drop=True)
-            print(data_phone_val)
+            # print(data_phone_val)
 
             # Join names to numbers
             data_phone = pd.concat([data_phone[['First Name','Contact LI Profile URL','Contact State','Company State']],data_phone_val],axis=1)
