@@ -28,7 +28,7 @@ def clean_phone_number(phone):
 
 def format_phone_number(phone):
     if phone not in ['','nan','None']:
-        return ''.join(['(',phone[:3],')',' ',phone[3:6],'-' ,phone[6:]])
+        return ''.join(['(', phone[:3], ') ', phone[3:6], '-', phone[6:]])
     else:
         return None
 
@@ -250,7 +250,7 @@ if file_path is not None:
             ### Data clean - emails
             email_columns = ['First Name','Company Name','Contact LI Profile URL','Primary Email'] + data_copy.filter(regex='^Email').columns.to_list()
             # Keep email columns
-            data_email = data_copy[email_columns].reset_index(drop=True)
+            data_email = data_copy[email_columns].astype(str).reset_index(drop=True)
         
         
         if on:
