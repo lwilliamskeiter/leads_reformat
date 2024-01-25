@@ -14,7 +14,7 @@ load_dotenv()
 urllib3.disable_warnings()
 
 #%% Load global variables
-APIKEY = os.getenv('APIKEY')
+APIKEY = st.secrets["APIKEY"]
 today = date.today()
 
 # Get requests pickle or initialize empty requests dict
@@ -230,7 +230,7 @@ if file_path is not None:
             # Apply phone formatting
             data_phone[phone_columns] = data_phone[phone_columns].applymap(lambda x: clean_numbers_list(str(x)))
             # Reformat Total AI columns from % to int
-            data_phone[data_phone.filter(like='AI').columns] = data_phone.filter(like='AI').applymap(lambda x: int(re.sub('%','',x)) if str(x)!='nan' else 0)
+            data_phone[data_phone.filter(like='AI').columns] = data_phone.filter(like='AI').applymap(lambda x: int(re.sub('%','',str(x))) if str(x)!='nan' else 0)
 
             # Only keep #s with AI>20
             data_phone = data_phone[data_phone['Contact Phone 1 Total AI']>=20].reset_index(drop=True)
@@ -282,7 +282,7 @@ if file_path is not None:
                     file_name=excel_path,
                     type='primary'
                 )
-                st.button('Reset',on_click=reset_button)
+                # st.button('Reset',on_click=reset_button)
         else:
             st.download_button(
                 label="Download Formatted Excel Workbook",
@@ -290,8 +290,5 @@ if file_path is not None:
                 file_name=excel_path,
                 type='primary'
             )
-            st.button('Reset',on_click=reset_button)
+        st.button('Reset',on_click=reset_button)
 
-    # # Download button
-    # if file_path is not None and st.session_state['button']:
-        
