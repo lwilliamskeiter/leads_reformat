@@ -207,7 +207,7 @@ if file_path is not None:
                 st.warning('You need to upload your old contacts file!')
             
         # Strip string whitespace
-        data_copy = data_copy.applymap(lambda x: x.strip() if type(x)=='str' else x)
+        data_copy = data_copy.applymap(lambda x: str(x).strip())
 
         # Remove Richmond, Charlottesville, and Henrico cities
         cities_to_remove = ['Richmond', 'Charlottesville', 'Henrico']
