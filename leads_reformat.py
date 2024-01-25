@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -6,10 +7,12 @@ import regex as re
 import requests
 import urllib3
 from datetime import date
+from dotenv import load_dotenv
 
+load_dotenv()
 urllib3.disable_warnings()
 
-APIKEY = '5ab4064c-e88a-40c0-9358-290709f22db0'
+APIKEY = os.getenv('APIKEY')
 today = date.today()
 
 #%% Functions
