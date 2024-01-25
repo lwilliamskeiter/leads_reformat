@@ -8,12 +8,21 @@ import requests
 import urllib3
 from datetime import date
 from dotenv import load_dotenv
+import pickle
 
 load_dotenv()
 urllib3.disable_warnings()
 
+#%% Load global variables
 APIKEY = os.getenv('APIKEY')
 today = date.today()
+
+# Get requests pickle or initialize empty requests dict
+if 'phone_requests.p' in os.listdir():
+    phone_requests = pickle.load(open("phone_requests.p", "rb"))
+else:
+    phone_requests = {}
+
 
 #%% Functions
 def clean_phone_number(phone):
@@ -56,9 +65,17 @@ def validate_phone(colname,PHONE):
 
     else:
         # If Phone is not empty, get just phone # (no hypen or parantheses)
-        PHONE = re.sub('[\(\)\- ]','',PHONE)
-        # API request
-        resp = requests.get(f'https://api.phonevalidator.com/api/v3/phonesearch?apikey={APIKEY}&phone={PHONE}&type=basic',verify=False)
+        if bool(re.search('[^0-9]',PHONE)):
+            PHONE = re.sub('[\(\)\- ]','',PHONE)
+        # If phone # already has a stored request, get it
+        if PHONE in phone_requests.keys():
+            resp = phone_requests.get(PHONE)
+        else:
+            # API request
+            resp = requests.get(f'https://api.phonevalidator.com/api/v3/phonesearch?apikey={APIKEY}&phone={PHONE}&type=basic',verify=False)
+            # Add new requests to existing dict and save
+            phone_requests.update({PHONE:resp})
+            pickle.dump(phone_requests, open('phone_requests.p', 'wb'))
         # Get PhoneBasic info
         phone_basic = pd.DataFrame.from_dict(resp.json().get('PhoneBasic'),orient='index').T
     
@@ -154,10 +171,10 @@ if 'clicked' not in st.session_state:
     st.session_state.clicked = False
 
 # Read file(s)
-file_path = st.file_uploader('Upload New Contacts File',type=['csv'])
+file_path = st.file_uploader('Upload New Contacts File',key='new_data_upload',type=['csv'])
 on = st.toggle('Add Old Contacts File')
 if on:
-    file_path_old = st.file_uploader('Upload Old Contacts File',type=['csv'])
+    file_path_old = st.file_uploader('Upload Old Contacts File',key='old_data_upload',type=['csv'])
 
 if file_path is not None:
     if on:
@@ -168,7 +185,7 @@ if file_path is not None:
 
 if file_path is not None:
     excel_path = 'cleaned_' + re.sub('\.csv','',file_path.name) + '_' + today.strftime("%y") + '_' + today.strftime("%m") + '_' + today.strftime("%d") + '.xlsx'
-    
+    print(f"STATE: {st.session_state['new_data_upload']}")
     if st.session_state.clicked:
 
         # Read in files
@@ -188,18 +205,18 @@ if file_path is not None:
             else:
                 st.warning('You need to upload your old contacts file!')
             
+        # Strip string whitespace
+        data_copy = data_copy.applymap(lambda x: x.strip() if type(x)=='str' else x)
+
+        # Remove Richmond, Charlottesville, and Henrico cities
+        cities_to_remove = ['Richmond', 'Charlottesville', 'Henrico']
+        data_copy = data_copy[~data_copy.filter(like='City').isin(cities_to_remove).any(axis=1)].reset_index(drop=True)
+
+        # Remove 804, 757, 540 area codes from all data
+        area_codes_to_remove = ['(804)', '(757)', '(540)']
+        data_copy = data_copy[~data_copy['Contact Phone 1'].str.startswith(tuple(area_codes_to_remove), na=False)].reset_index(drop=True)
+
         with st.spinner():
-
-            # Strip string whitespace
-            data_copy = data_copy.applymap(lambda x: x.strip() if type(x)=='str' else x)
-
-            # Remove Richmond, Charlottesville, and Henrico cities
-            cities_to_remove = ['Richmond', 'Charlottesville', 'Henrico']
-            data_copy = data_copy[~data_copy.filter(like='City').isin(cities_to_remove).any(axis=1)].reset_index(drop=True)
-
-            # Remove 804, 757, 540 area codes from all data
-            area_codes_to_remove = ['(804)', '(757)', '(540)']
-            data_copy = data_copy[~data_copy['Contact Phone 1'].str.startswith(tuple(area_codes_to_remove), na=False)].reset_index(drop=True)
 
             ### Data clean - phone #'s
             # Define the phone number columns to process - Keep only first 3 phone cols
@@ -219,8 +236,8 @@ if file_path is not None:
             # Only keep #s with AI>20
             data_phone = data_phone[data_phone['Contact Phone 1 Total AI']>=20].reset_index(drop=True)
             # Remove Contact Phone 2 and 3 if AI<20
-            data_phone['Contact Phone 2'][data_phone['Contact Phone 2 Total AI'] < 20] = 'None'
-            data_phone['Contact Phone 3'][data_phone['Contact Phone 3 Total AI'] < 20] = 'None'
+            data_phone[data_phone['Contact Phone 2 Total AI'] < 20]['Contact Phone 2'] = 'None'
+            data_phone[data_phone['Contact Phone 3 Total AI'] < 20]['Contact Phone 3'] = 'None'
 
             # Keep only phone # columns
             data_phone = data_phone[['First Name','Contact LI Profile URL','Contact State','Company State'] + phone_columns]
