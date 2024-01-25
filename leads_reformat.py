@@ -188,7 +188,7 @@ if file_path is not None:
         with st.spinner():
 
             # Strip string whitespace
-            data_copy = data_copy.map(lambda x: x.strip() if type(x)=='str' else x)
+            data_copy = data_copy.applymap(lambda x: x.strip() if type(x)=='str' else x)
 
             # Remove Richmond, Charlottesville, and Henrico cities
             cities_to_remove = ['Richmond', 'Charlottesville', 'Henrico']
@@ -209,9 +209,9 @@ if file_path is not None:
             )
             
             # Apply phone formatting
-            data_phone[phone_columns] = data_phone[phone_columns].map(lambda x: clean_numbers_list(str(x)))
+            data_phone[phone_columns] = data_phone[phone_columns].applymap(lambda x: clean_numbers_list(str(x)))
             # Reformat Total AI columns from % to int
-            data_phone[data_phone.filter(like='AI').columns] = data_phone.filter(like='AI').map(lambda x: int(re.sub('%','',x)) if str(x)!='nan' else 0)
+            data_phone[data_phone.filter(like='AI').columns] = data_phone.filter(like='AI').applymap(lambda x: int(re.sub('%','',x)) if str(x)!='nan' else 0)
 
             # Only keep #s with AI>20
             data_phone = data_phone[data_phone['Contact Phone 1 Total AI']>=20].reset_index(drop=True)
@@ -236,7 +236,7 @@ if file_path is not None:
             # Join names to numbers
             data_phone = pd.concat([data_phone[['First Name','Contact LI Profile URL','Contact State','Company State']],data_phone_val],axis=1)
             # Reformat phone #s
-            data_phone[data_phone.filter(like='PhoneNumber').columns] = data_phone.filter(like='PhoneNumber').map(format_phone_number)
+            data_phone[data_phone.filter(like='PhoneNumber').columns] = data_phone.filter(like='PhoneNumber').applymap(format_phone_number)
             # Reorder columns
             data_phone = data_phone[
                 ['First Name'] + 
