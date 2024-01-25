@@ -76,6 +76,7 @@ def validate_phone(colname,PHONE):
             # Add new requests to existing dict and save
             phone_requests.update({PHONE:resp})
             pickle.dump(phone_requests, open('phone_requests.p', 'wb'))
+        print(resp)
         # Get PhoneBasic info
         phone_basic = pd.DataFrame.from_dict(resp.json().get('PhoneBasic'),orient='index').T
     
@@ -185,7 +186,7 @@ if file_path is not None:
 
 if file_path is not None:
     excel_path = 'cleaned_' + re.sub('\.csv','',file_path.name) + '_' + today.strftime("%y") + '_' + today.strftime("%m") + '_' + today.strftime("%d") + '.xlsx'
-    print(f"STATE: {st.session_state['new_data_upload']}")
+
     if st.session_state.clicked:
 
         # Read in files
