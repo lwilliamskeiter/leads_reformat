@@ -14,7 +14,9 @@ load_dotenv()
 urllib3.disable_warnings()
 
 #%% Load global variables
-APIKEY = st.secrets["APIKEY"]
+APIKEY = os.getenv('APIKEY')
+if len(APIKEY)==0:
+    APIKEY = st.secrets['APIKEY']
 today = date.today()
 
 # Get requests pickle or initialize empty requests dict
@@ -39,7 +41,7 @@ def clean_phone_number(phone):
         return None
 
 def format_phone_number(phone):
-    if phone not in ['','nan','None']:
+    if phone not in ['','nan','None',None]:
         return ''.join(['(', phone[:3], ') ', phone[3:6], '-', phone[6:]])
     else:
         return None
@@ -102,10 +104,10 @@ def write_excel(data_phone,data_email):
     # Set column font sizes and widths
     wkst_phone.set_column(0, 0, max([data_phone['First Name'].apply(len).max(),14]), workbook.add_format({'font_size': 14}))
     # Set phone # column format
-    for i in list(np.where([x in data_phone.filter(like='PhoneNumber').columns.to_list() for x in data_phone.columns.to_list()])[0]):
+    for i in list(np.where([x in data_phone.filter(regex='PhoneNumber|Contact Phone').columns.to_list() for x in data_phone.columns.to_list()])[0]):
         wkst_phone.set_column(i,i,30,workbook.add_format({'font_size': 24}))
     # Set remaining column formats
-    for j in [x for x in range(data_phone.shape[1]) if x not in [0] + list(np.where([x in data_phone.filter(like='PhoneNumber').columns.to_list() for x in data_phone.columns.to_list()])[0])]:
+    for j in [x for x in range(data_phone.shape[1]) if x not in [0] + list(np.where([x in data_phone.filter(regex='PhoneNumber|Contact Phone').columns.to_list() for x in data_phone.columns.to_list()])[0])]:
         wkst_phone.set_column(j,j,max([data_phone.iloc[:,j].dropna().apply(len).max(),14]))
     
     # Set table style
@@ -171,6 +173,7 @@ if 'clicked' not in st.session_state:
     st.session_state.clicked = False
 
 # Read file(s)
+validate = st.toggle('Use Phone Validation API')
 file_path = st.file_uploader('Upload New Contacts File',key='new_data_upload',type=['csv'])
 on = st.toggle('Add Old Contacts File')
 if on:
@@ -235,36 +238,33 @@ if file_path is not None:
             # Only keep #s with AI>20
             data_phone = data_phone[data_phone['Contact Phone 1 Total AI']>=20].reset_index(drop=True)
             # Remove Contact Phone 2 and 3 if AI<20
-            data_phone[data_phone['Contact Phone 2 Total AI'] < 20]['Contact Phone 2'] = 'None'
-            data_phone[data_phone['Contact Phone 3 Total AI'] < 20]['Contact Phone 3'] = 'None'
+            data_phone.loc[data_phone['Contact Phone 2 Total AI'] < 20, 'Contact Phone 2'] = 'None'
+            data_phone.loc[data_phone['Contact Phone 3 Total AI'] < 20, 'Contact Phone 3'] = 'None'
 
             # Keep only phone # columns
             data_phone = data_phone[['First Name','Contact LI Profile URL','Contact State','Company State'] + phone_columns]
-
             # Remove people with all invalid phone #s
-            data_phone = data_phone[
-                ((data_phone[phone_columns].isin(['nan','None'])) | data_phone[phone_columns].isna()).apply(sum,axis=1) < 3
-            ].reset_index(drop=True)
-            # print(data_phone)
+            data_phone = data_phone[((data_phone[phone_columns].isin(['nan','None'])) | data_phone[phone_columns].isna()).apply(sum,axis=1) < 3].reset_index(drop=True)
 
-            # Validate phone #s
-            data_phone_val = pd.concat(
-                [pd.concat([validate_phone(x,str(y)) for y in data_phone[x]]).reset_index(drop=True) 
-                for x in phone_columns],
-            axis=1).reset_index(drop=True)
-            # print(data_phone_val)
+            if validate:
+                # Validate phone #s
+                data_phone_val = pd.concat(
+                    [pd.concat([validate_phone(x,str(y)) for y in data_phone[x]]).reset_index(drop=True) 
+                    for x in phone_columns], axis=1
+                ).reset_index(drop=True)
 
-            # Join names to numbers
-            data_phone = pd.concat([data_phone[['First Name','Contact LI Profile URL','Contact State','Company State']],data_phone_val],axis=1)
+                # Join names to numbers
+                data_phone = pd.concat([data_phone.drop(columns=phone_columns),data_phone_val],axis=1)
+            
             # Reformat phone #s
-            data_phone[data_phone.filter(like='PhoneNumber').columns] = data_phone.filter(like='PhoneNumber').applymap(format_phone_number)
+            data_phone[data_phone.filter(regex='PhoneNumber|Contact Phone').columns] = data_phone.filter(regex='PhoneNumber|Contact Phone').applymap(format_phone_number)
             # Reorder columns
             data_phone = data_phone[
                 ['First Name'] + 
-                data_phone.filter(like='PhoneNumber').columns.to_list() + 
+                data_phone.filter(regex='PhoneNumber|Contact Phone').columns.to_list() + 
                 ['Contact State','Company State'] +
                 [x for x in data_phone if x not in 
-                 ['First Name','Contact LI Profile URL','Contact State','Company State'] + data_phone.filter(like='PhoneNumber').columns.to_list()] + 
+                 ['First Name','Contact LI Profile URL','Contact State','Company State'] + data_phone.filter(regex='PhoneNumber|Contact Phone').columns.to_list()] + 
                 ['Contact LI Profile URL']
             ]
 
