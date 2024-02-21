@@ -187,7 +187,7 @@ if 'clicked' not in st.session_state:
     st.session_state.clicked = False
 
 # Read file(s)
-contact_source = st.selectbox('Contact Source',options=['ZoomInfo','KLang'],index=None,placeholder="Select contact source",)
+# contact_source = st.selectbox('Contact Source',options=['ZoomInfo','KLang'],index=None,placeholder="Select contact source",)
 validate = st.toggle('Use Phone Validation API')
 file_path = st.file_uploader('Upload New Contacts File',key='new_data_upload',type=['csv'])
 on = st.toggle('Add Old Contacts File')
@@ -255,7 +255,7 @@ if file_path is not None:
             )
             
             # Apply phone formatting
-            data_phone[phone_columns] = data_phone[phone_columns].applymap(lambda x: clean_numbers_list(str(x)))
+            # data_phone[phone_columns] = data_phone[phone_columns].applymap(lambda x: clean_numbers_list(str(x)))
             
             # Reformat Total AI columns from % to int
             if not data_copy.filter(like=' AI').columns.empty:
