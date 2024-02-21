@@ -26,18 +26,25 @@ else:
     phone_requests = {}
 
 timezones = {
-    'Alabama': 'CT', 'Alaska': 'AK', 'Arizona': 'MT', 'Arkansas': 'CT',
-    'California': 'PT', 'Colorado': 'MT', 'Connecticut': 'ET', 'Delaware': 'ET',
-    'Florida': 'ET', 'Georgia': 'ET', 'Hawaii': 'HA', 'Idaho': 'MT',
-    'Illinois': 'CT', 'Indiana': 'ET', 'Iowa': 'CT', 'Kansas': 'CT',
-    'Kentucky': 'ET', 'Louisiana': 'CT', 'Maine': 'ET', 'Maryland': 'ET',
-    'Massachusetts': 'ET', 'Michigan': 'ET', 'Minnesota': 'CT', 'Mississippi': 'CT',
-    'Missouri': 'CT', 'Montana': 'MT', 'Nebraska': 'CT', 'Nevada': 'PT',
+    'Alabama': 'CT', 'Alaska': 'AK', 'Arizona': 'MT', 'Arkansas': 'CT', 'California': 'PT',
+    'Colorado': 'MT', 'Connecticut': 'ET', 'Delaware': 'ET', 'Florida': 'ET, CT',  # Western parts are in Central Time
+    'Georgia': 'ET', 'Hawaii': 'HA', 'Idaho': 'MT, PT',  # Northern Idaho is in Pacific Time
+    'Illinois': 'CT', 'Indiana': 'ET, CT',  # Northwestern and southwestern parts are in Central Time
+    'Iowa': 'CT', 'Kansas': 'CT, MT',   # Western Kansas is in Mountain Time
+    'Kentucky': 'ET, CT', # Western parts are in Central Time
+    'Louisiana': 'CT', 'Maine': 'ET', 'Maryland': 'ET', 'Massachusetts': 'ET',
+    'Michigan': 'ET, CT', # Western part of the Upper Peninsula is in Central Time
+    'Minnesota': 'CT', 'Mississippi': 'CT', 'Missouri': 'CT', 'Montana': 'MT',
+    'Nebraska': 'CT, MT', # Western Nebraska is in Mountain Time
+    'Nevada': 'PT, MT',   # Small part of eastern Nevada is in Mountain Time
     'New Hampshire': 'ET', 'New Jersey': 'ET', 'New Mexico': 'MT', 'New York': 'ET',
-    'North Carolina': 'ET', 'North Dakota': 'CT', 'Ohio': 'ET', 'Oklahoma': 'CT',
-    'Oregon': 'PT', 'Pennsylvania': 'ET', 'Rhode Island': 'ET', 'South Carolina': 'ET',
-    'South Dakota': 'CT', 'Tennessee': 'ET', 'Texas': 'CT', 'Utah': 'MT',
-    'Vermont': 'ET', 'Virginia': 'ET', 'Washington': 'PT', 'West Virginia': 'ET',
+    'North Carolina': 'ET', 'North Dakota': 'CT, MT', # Southwestern part is in Mountain Time
+    'Ohio': 'ET', 'Oklahoma': 'CT', 'Oregon': 'PT, MT', # Small part of eastern Oregon is in Mountain Time
+    'Pennsylvania': 'ET', 'Rhode Island': 'ET', 'South Carolina': 'ET',
+    'South Dakota': 'CT, MT', # Western South Dakota is in Mountain Time
+    'Tennessee': 'ET, CT',    # Eastern part is in Eastern Time, rest is in Central
+    'Texas': 'CT, MT',        # Western tip is in Mountain Time
+    'Utah': 'MT', 'Vermont': 'ET', 'Virginia': 'ET', 'Washington': 'PT', 'West Virginia': 'ET',
     'Wisconsin': 'CT', 'Wyoming': 'MT'
 }
 
@@ -121,8 +128,8 @@ def write_excel(data_phone,data_email,phone_cols):
     for j in [x for x in range(data_phone.shape[1]) if x not in [0] + list(np.where([x in phone_cols for x in data_phone.columns.to_list()])[0])]:
         wkst_phone.set_column(j,j,max([data_phone.iloc[:,j].dropna().apply(len).max(),len(data_phone.iloc[:,j].name)+5,14]))
     
-    for k in np.where([x in data_phone.filter(regex='TZ$').columns.to_list() for x in data_phone.columns.to_list()])[0]:
-        wkst_phone.set_column(k,k,max([data_phone.iloc[:,k].dropna().apply(len).max(),len(data_phone.iloc[:,k].name)+5,14]))
+    for k in np.where([x in 'Timezone' for x in data_phone.columns.to_list()])[0]:
+        wkst_phone.set_column(k,k,max([data_phone.iloc[:,k].dropna().apply(len).max(),12]))
     
     # Set table style
     wkst_phone.add_table(0, 0, data_phone.shape[0], data_phone.shape[1]-1,
@@ -216,6 +223,10 @@ if file_path is not None:
         if on:
             if file_path_old is not None:
                 data_old = pd.read_csv(file_path_old)
+                if 'Contact Full Name' not in data.columns:
+                    data_copy['Contact Full Name'] = data_copy[['First Name','Last Name']].apply(lambda x: ' '.join(x), axis=1)
+                    data_old['Contact Full Name'] = data_old[['First Name','Last Name']].apply(lambda x: ' '.join(x), axis=1)
+                
                 data_copy = (
                     data_copy
                     .merge(data_old[['Contact Full Name','Company Name']],how='outer',on=['Contact Full Name','Company Name'],indicator=True)
@@ -292,14 +303,14 @@ if file_path is not None:
             # Reformat phone #s
             data_phone[final_phone_cols] = data_phone[final_phone_cols].applymap(format_phone_number)
             # Add timezones
-            data_phone = pd.concat([data_phone,data_phone.filter(like='State').applymap(timezones.get).rename(columns=lambda x: x + ' TZ')],axis=1)
+            data_phone['Timezone'] = data_phone.filter(like='State').applymap(timezones.get).apply(lambda x: [y for y in x.unique() if y is not None][0] if len([y for y in x.unique() if y is not None])>0 else '', axis=1)
             # Reorder columns
             data_phone = data_phone[
                 [other_cols[0]] + 
                 final_phone_cols + 
-                data_phone.filter(regex='TZ$').columns.to_list() +
+                ['Timezone'] +
                 other_cols[2:] +
-                [x for x in data_phone if x not in other_cols + final_phone_cols + data_phone.filter(regex='TZ$').columns.to_list()] + 
+                [x for x in data_phone if x not in other_cols + final_phone_cols + ['Timezone']] + 
                 [other_cols[1]]
             ]
 
