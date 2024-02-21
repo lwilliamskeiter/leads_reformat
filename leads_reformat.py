@@ -129,7 +129,7 @@ def write_excel(data_phone,data_email,phone_cols):
         wkst_phone.set_column(j,j,max([data_phone.iloc[:,j].dropna().apply(len).max(),len(data_phone.iloc[:,j].name)+5,14]))
     
     for k in np.where([x in 'Timezone' for x in data_phone.columns.to_list()])[0]:
-        wkst_phone.set_column(k,k,max([data_phone.iloc[:,k].dropna().apply(len).max(),12]))
+        wkst_phone.set_column(k,k,max([data_phone.iloc[:,k].dropna().apply(len).max(),13]))
     
     # Set table style
     wkst_phone.add_table(0, 0, data_phone.shape[0], data_phone.shape[1]-1,
