@@ -255,7 +255,7 @@ if file_path is not None:
             )
             
             # Apply phone formatting
-            # data_phone[phone_columns] = data_phone[phone_columns].applymap(lambda x: clean_numbers_list(str(x)))
+            data_phone[phone_columns] = data_phone[phone_columns].applymap(lambda x: clean_numbers_list(str(x)))
             
             # Reformat Total AI columns from % to int
             if not data_copy.filter(like=' AI').columns.empty:
