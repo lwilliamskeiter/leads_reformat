@@ -27,7 +27,8 @@ else:
 
 timezones = {
     'Alabama': 'CT', 'Alaska': 'AK', 'Arizona': 'MT', 'Arkansas': 'CT', 'California': 'PT',
-    'Colorado': 'MT', 'Connecticut': 'ET', 'Delaware': 'ET', 'Florida': 'ET, CT',  # Western parts are in Central Time
+    'Colorado': 'MT', 'Connecticut': 'ET', 'Delaware': 'ET',
+    'Florida': 'ET, CT',  # Western parts are in Central Time
     'Georgia': 'ET', 'Hawaii': 'HA', 'Idaho': 'MT, PT',  # Northern Idaho is in Pacific Time
     'Illinois': 'CT', 'Indiana': 'ET, CT',  # Northwestern and southwestern parts are in Central Time
     'Iowa': 'CT', 'Kansas': 'CT, MT',   # Western Kansas is in Mountain Time
@@ -194,7 +195,7 @@ if 'clicked' not in st.session_state:
     st.session_state.clicked = False
 
 # Read file(s)
-# contact_source = st.selectbox('Contact Source',options=['ZoomInfo','KLang'],index=None,placeholder="Select contact source",)
+contact_source = st.write('App supports: ZoomInfo, Seamless')
 validate = st.toggle('Use Phone Validation API')
 file_path = st.file_uploader('Upload New Contacts File',key='new_data_upload',type=['csv'])
 on = st.toggle('Add Old Contacts File')
