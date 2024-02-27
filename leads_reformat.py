@@ -26,27 +26,56 @@ else:
     phone_requests = {}
 
 timezones = {
-    'Alabama': 'CT', 'Alaska': 'AK', 'Arizona': 'MT', 'Arkansas': 'CT', 'California': 'PT',
-    'Colorado': 'MT', 'Connecticut': 'ET', 'Delaware': 'ET',
-    'Florida': 'ET, CT',  # Western parts are in Central Time
-    'Georgia': 'ET', 'Hawaii': 'HA', 'Idaho': 'MT, PT',  # Northern Idaho is in Pacific Time
-    'Illinois': 'CT', 'Indiana': 'ET, CT',  # Northwestern and southwestern parts are in Central Time
-    'Iowa': 'CT', 'Kansas': 'CT, MT',   # Western Kansas is in Mountain Time
-    'Kentucky': 'ET, CT', # Western parts are in Central Time
-    'Louisiana': 'CT', 'Maine': 'ET', 'Maryland': 'ET', 'Massachusetts': 'ET',
-    'Michigan': 'ET, CT', # Western part of the Upper Peninsula is in Central Time
-    'Minnesota': 'CT', 'Mississippi': 'CT', 'Missouri': 'CT', 'Montana': 'MT',
-    'Nebraska': 'CT, MT', # Western Nebraska is in Mountain Time
-    'Nevada': 'PT, MT',   # Small part of eastern Nevada is in Mountain Time
-    'New Hampshire': 'ET', 'New Jersey': 'ET', 'New Mexico': 'MT', 'New York': 'ET',
-    'North Carolina': 'ET', 'North Dakota': 'CT, MT', # Southwestern part is in Mountain Time
-    'Ohio': 'ET', 'Oklahoma': 'CT', 'Oregon': 'PT, MT', # Small part of eastern Oregon is in Mountain Time
-    'Pennsylvania': 'ET', 'Rhode Island': 'ET', 'South Carolina': 'ET',
-    'South Dakota': 'CT, MT', # Western South Dakota is in Mountain Time
-    'Tennessee': 'ET, CT',    # Eastern part is in Eastern Time, rest is in Central
-    'Texas': 'CT, MT',        # Western tip is in Mountain Time
-    'Utah': 'MT', 'Vermont': 'ET', 'Virginia': 'ET', 'Washington': 'PT', 'West Virginia': 'ET',
-    'Wisconsin': 'CT', 'Wyoming': 'MT'
+    'Alabama': '-6',
+    'Alaska': '-9, -10',  # Includes Aleutian Islands
+    'Arizona': '-7',      # Arizona does not observe Daylight Saving Time
+    'Arkansas': '-6',
+    'California': '-8',
+    'Colorado': '-7',
+    'Connecticut': '-5',
+    'Delaware': '-5',
+    'Florida': '-5, -6',  # Western parts are in Central Time
+    'Georgia': '-5',
+    'Hawaii': '-10',
+    'Idaho': '-7, -8',    # Northern Idaho is in Pacific Time
+    'Illinois': '-6',
+    'Indiana': '-5, -6',  # Northwestern and southwestern parts are in Central Time
+    'Iowa': '-6',
+    'Kansas': '-6, -7',   # Western Kansas is in Mountain Time
+    'Kentucky': '-5, -6', # Western parts are in Central Time
+    'Louisiana': '-6',
+    'Maine': '-5',
+    'Maryland': '-5',
+    'Massachusetts': '-5',
+    'Michigan': '-5, -6', # Western part of the Upper Peninsula is in Central Time
+    'Minnesota': '-6',
+    'Mississippi': '-6',
+    'Missouri': '-6',
+    'Montana': '-7',
+    'Nebraska': '-6, -7', # Western Nebraska is in Mountain Time
+    'Nevada': '-8, -7',   # Small part of eastern Nevada is in Mountain Time
+    'New Hampshire': '-5',
+    'New Jersey': '-5',
+    'New Mexico': '-7',
+    'New York': '-5',
+    'North Carolina': '-5',
+    'North Dakota': '-6, -7', # Southwestern part is in Mountain Time
+    'Ohio': '-5',
+    'Oklahoma': '-6',
+    'Oregon': '-8, -7',       # Small part of eastern Oregon is in Mountain Time
+    'Pennsylvania': '-5',
+    'Rhode Island': '-5',
+    'South Carolina': '-5',
+    'South Dakota': '-6, -7', # Western South Dakota is in Mountain Time
+    'Tennessee': '-5, -6',    # Eastern part is in Eastern Time, rest is in Central
+    'Texas': '-6, -7',        # Western tip is in Mountain Time
+    'Utah': '-7',
+    'Vermont': '-5',
+    'Virginia': '-5',
+    'Washington': '-8',
+    'West Virginia': '-5',
+    'Wisconsin': '-6',
+    'Wyoming': '-7'
 }
 
 #%% Functions
