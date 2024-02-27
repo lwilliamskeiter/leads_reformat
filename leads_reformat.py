@@ -25,57 +25,57 @@ if 'phone_requests.p' in os.listdir():
 else:
     phone_requests = {}
 
-timezones = {
-    'Alabama': '-6',
-    'Alaska': '-9, -10',  # Includes Aleutian Islands
-    'Arizona': '-7',      # Arizona does not observe Daylight Saving Time
-    'Arkansas': '-6',
-    'California': '-8',
-    'Colorado': '-7',
-    'Connecticut': '-5',
-    'Delaware': '-5',
-    'Florida': '-5, -6',  # Western parts are in Central Time
-    'Georgia': '-5',
-    'Hawaii': '-10',
-    'Idaho': '-7, -8',    # Northern Idaho is in Pacific Time
-    'Illinois': '-6',
-    'Indiana': '-5, -6',  # Northwestern and southwestern parts are in Central Time
-    'Iowa': '-6',
-    'Kansas': '-6, -7',   # Western Kansas is in Mountain Time
-    'Kentucky': '-5, -6', # Western parts are in Central Time
-    'Louisiana': '-6',
-    'Maine': '-5',
-    'Maryland': '-5',
-    'Massachusetts': '-5',
-    'Michigan': '-5, -6', # Western part of the Upper Peninsula is in Central Time
-    'Minnesota': '-6',
-    'Mississippi': '-6',
-    'Missouri': '-6',
-    'Montana': '-7',
-    'Nebraska': '-6, -7', # Western Nebraska is in Mountain Time
-    'Nevada': '-8, -7',   # Small part of eastern Nevada is in Mountain Time
-    'New Hampshire': '-5',
-    'New Jersey': '-5',
-    'New Mexico': '-7',
-    'New York': '-5',
-    'North Carolina': '-5',
-    'North Dakota': '-6, -7', # Southwestern part is in Mountain Time
-    'Ohio': '-5',
-    'Oklahoma': '-6',
-    'Oregon': '-8, -7',       # Small part of eastern Oregon is in Mountain Time
-    'Pennsylvania': '-5',
-    'Rhode Island': '-5',
-    'South Carolina': '-5',
-    'South Dakota': '-6, -7', # Western South Dakota is in Mountain Time
-    'Tennessee': '-5, -6',    # Eastern part is in Eastern Time, rest is in Central
-    'Texas': '-6, -7',        # Western tip is in Mountain Time
-    'Utah': '-7',
-    'Vermont': '-5',
-    'Virginia': '-5',
-    'Washington': '-8',
-    'West Virginia': '-5',
-    'Wisconsin': '-6',
-    'Wyoming': '-7'
+timezones = timezones = {
+    'Alabama': '-6 CST',
+    'Alaska': '-9 AKST, -10 HAST',  # Includes Aleutian Islands
+    'Arizona': '-7 MST',            # Arizona does not observe Daylight Saving Time
+    'Arkansas': '-6 CST',
+    'California': '-8 PST',
+    'Colorado': '-7 MST',
+    'Connecticut': '-5 EST',
+    'Delaware': '-5 EST',
+    'Florida': '-5 EST, -6 CST',    # Western parts are in Central Standard Time
+    'Georgia': '-5 EST',
+    'Hawaii': '-10 HAST',
+    'Idaho': '-7 MST, -8 PST',      # Northern Idaho is in Pacific Standard Time
+    'Illinois': '-6 CST',
+    'Indiana': '-5 EST, -6 CST',    # Northwestern and southwestern parts are in Central Standard Time
+    'Iowa': '-6 CST',
+    'Kansas': '-6 CST, -7 MST',     # Western Kansas is in Mountain Standard Time
+    'Kentucky': '-5 EST, -6 CST',   # Western parts are in Central Standard Time
+    'Louisiana': '-6 CST',
+    'Maine': '-5 EST',
+    'Maryland': '-5 EST',
+    'Massachusetts': '-5 EST',
+    'Michigan': '-5 EST, -6 CST',   # Western part of the Upper Peninsula is in Central Standard Time
+    'Minnesota': '-6 CST',
+    'Mississippi': '-6 CST',
+    'Missouri': '-6 CST',
+    'Montana': '-7 MST',
+    'Nebraska': '-6 CST, -7 MST',   # Western Nebraska is in Mountain Standard Time
+    'Nevada': '-8 PST, -7 MST',     # Small part of eastern Nevada is in Mountain Standard Time
+    'New Hampshire': '-5 EST',
+    'New Jersey': '-5 EST',
+    'New Mexico': '-7 MST',
+    'New York': '-5 EST',
+    'North Carolina': '-5 EST',
+    'North Dakota': '-6 CST, -7 MST', # Southwestern part is in Mountain Standard Time
+    'Ohio': '-5 EST',
+    'Oklahoma': '-6 CST',
+    'Oregon': '-8 PST, -7 MST',       # Small part of eastern Oregon is in Mountain Standard Time
+    'Pennsylvania': '-5 EST',
+    'Rhode Island': '-5 EST',
+    'South Carolina': '-5 EST',
+    'South Dakota': '-6 CST, -7 MST', # Western South Dakota is in Mountain Standard Time
+    'Tennessee': '-5 EST, -6 CST',    # Eastern part is in Eastern Standard Time, rest is in Central
+    'Texas': '-6 CST, -7 MST',        # Western tip is in Mountain Standard Time
+    'Utah': '-7 MST',
+    'Vermont': '-5 EST',
+    'Virginia': '-5 EST',
+    'Washington': '-8 PST',
+    'West Virginia': '-5 EST',
+    'Wisconsin': '-6 CST',
+    'Wyoming': '-7 MST'
 }
 
 #%% Functions
@@ -334,10 +334,6 @@ if file_path is not None:
             data_phone[final_phone_cols] = data_phone[final_phone_cols].applymap(format_phone_number)
             # Add timezones
             data_phone['Timezone'] = data_phone.filter(like='State').applymap(timezones.get).apply(lambda x: [y for y in x.unique() if y is not None][0] if len([y for y in x.unique() if y is not None])>0 else '', axis=1)
-            # Coerce to int and sort
-            data_phone['Timezone'] = data_phone['Timezone'].astype(str).str.extractall('(-?\d+)').reset_index().groupby('level_0').agg(lambda x: x.astype(int).sort_values(ascending=False))[0]
-            data_phone['Timezone'] = [re.sub('\[|\]','',', '.join([str(x)])) if len(x)>1 else x[0] if x != [] else '' for x in data_phone['Timezone'].map(lambda x: [int(y) for y in re.findall('-?\d+',re.sub('\..+','',str(x)))])]
-            data_phone['Timezone'] = data_phone['Timezone'].astype(str)
             # Reorder columns
             data_phone = data_phone[
                 [other_cols[0]] + 
