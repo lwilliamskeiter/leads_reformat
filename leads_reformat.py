@@ -336,7 +336,7 @@ if file_path is not None:
             data_phone['Timezone'] = data_phone.filter(like='State').applymap(timezones.get).apply(lambda x: [y for y in x.unique() if y is not None][0] if len([y for y in x.unique() if y is not None])>0 else '', axis=1)
             # Coerce to int and sort
             data_phone['Timezone'] = data_phone['Timezone'].astype(str).str.extractall('(-?\d+)').reset_index().groupby('level_0').agg(lambda x: x.astype(int).sort_values(ascending=False))[0]
-            data_phone['Timezone'] = [re.sub('\[|\]','',', '.join([str(x)])) if len(x)>1 else x[0] if x != [] else '' for x in data_phone['Timezone'].map(lambda x: [int(y) for y in re.findall('-?\d+',str(x))])]
+            data_phone['Timezone'] = [re.sub('\[|\]','',', '.join([str(x)])) if len(x)>1 else x[0] if x != [] else '' for x in data_phone['Timezone'].map(lambda x: [int(y) for y in re.findall('(-\d+)',str(x))])]
             # Reorder columns
             data_phone = data_phone[
                 [other_cols[0]] + 
